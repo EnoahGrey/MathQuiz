@@ -22,40 +22,48 @@ void readQuestionsFromTextFile(const string& filePath, vector<string>& questions
 	cout << "Preperation complete. \n";
 }
 
-string generateRandomMathProblems(const vector<string>& questions, const string& question, const string& resultsPath)
+vector<string> generateRandomMathProblems(const vector<string>& questions, const string& question, const string& resultsPath)
 {	
+	vector<string> userAnswers; // vector to store the user's answers
 	int quizSize = 3; // number of questions to ask the user
 	int i = 0; // counter for the number of questions asked
 
 	// call this once before you call rand()
 	srand(time(NULL)); // initialize the random number generator
 
-	// get a random number between 1 & 10
-	int randomNumber = rand() % 10 + 1;
-	
 	while (i < quizSize)
 	{
 		string input; // variable to store the user's answer
 
-		randomNumber = rand() % 10 + 1; // get a new random number if the previous one is out of range
+		// the original code seemed to cause the program to crash on occation. rand() % 10+1 generated a number from 1-10 but the vector indexes 0-9. I changed it to prevent crashes.
+		int randomNumber = rand() % questions.size(); // get a new random number if the previous one is out of range
 		cout << questions[randomNumber] << " = ";
-		cin >> input;
 		getline(cin, input); // get the user's answer
-		cout << "count is " << i << "\n"; // display the counter
-		i++; // increment the counter
+
+		// combine the question and answer into a single string
+		string questionAndAnswer = questions[randomNumber] + " = " + input;
+		userAnswers.push_back(questionAndAnswer);
+		
+		// increment the counter
+		i++; 
 	}	
 
-	return resultsPath; //this should return the user's answers to main() so that they can be saved to a text file, but I am not sure how to do that yet.
+	return userAnswers; //this should return the user's answers to main() so that they can be saved to a text file, but I am not sure how to do that yet.
 }
 
-//void saveResultsToTextFile(const string& resultsPath)
-//{
-//	string resultsPath = resultsPath; // path to text file to save results
-//	ofstream ofs(resultsPath);
-//
-//	ofs << input_iterator << "\n"; // write the user's answer to the file
-//	ofs.close();
-//}
+void saveResultsToTextFile(const string& resultsPath, const vector<string>& userAnswers)
+{
+	ofstream ofs(resultsPath);
+
+	ofs << "User Answers:\n"; // write a header to the file
+	for (const string& answer : userAnswers)
+	{
+		ofs << answer << "\n"; // write the user's answer to the file
+	}
+	ofs.close();
+
+	cout << "Results saved to text file: " << resultsPath << "\n";
+}
 
 int main()
 {
@@ -70,6 +78,8 @@ int main()
 
 	vector<string> questions; // vector to store the question(s)
 	string question; // variable to store the question being retrieved from the text file
+	vector<string> userAnswers; // vector to store the user's answers
+	string answer; // variable to store the user's answer
 
 	#pragma region File Check
 	// check if question file exists, if not create one with some sample questions
@@ -77,16 +87,16 @@ int main()
 	{
 		cout << "No QuizQuestions.txt file found. Creating: C:\\Temp\\QuizQuestions.txt \n";
 		ofstream ofs(filePath);
-		ofs << "1 + 1 \n"; // 1 + 1
-		ofs << "2 * 3 \n"; // 2 * 3
-		ofs << "4 / 2 \n"; // 4 / 2
-		ofs << "5 - 3 \n"; // 5 - 3
-		ofs << "6 + 4 \n"; // 6 + 4
-		ofs << "8 * 2 \n"; // 8 * 2
-		ofs << "10 / 5 \n"; // 10 / 5
-		ofs << "7 - 2 \n"; // 7 - 2
-		ofs << "9 + 1 \n"; // 9 + 1
-		ofs << "3 * 5 \n"; // 3 * 5
+		ofs << "1 + 1\n"; // 1 + 1
+		ofs << "2 * 3\n"; // 2 * 3
+		ofs << "4 / 2\n"; // 4 / 2
+		ofs << "5 - 3\n"; // 5 - 3
+		ofs << "6 + 4\n"; // 6 + 4
+		ofs << "8 * 2\n"; // 8 * 2
+		ofs << "10 / 5\n"; // 10 / 5
+		ofs << "7 - 2\n"; // 7 - 2
+		ofs << "9 + 1\n"; // 9 + 1
+		ofs << "3 * 5\n"; // 3 * 5
 	}
 	else
 	{
@@ -100,11 +110,11 @@ int main()
 
 	// Generate random math problems for the user to solve.
 	cout << "Generating random math problems.\n";
-	generateRandomMathProblems(questions, question, resultsPath);
+	userAnswers = generateRandomMathProblems(questions, question, resultsPath);
 
-	//// Save the user's answers to a text file.
-	//cout << "Saving results to text file.\n";
-	//saveResultsToTextFile(resultsPath);
+	// Save the user's answers to a text file.
+	cout << "Saving results to text file.\n";
+	saveResultsToTextFile(resultsPath, userAnswers);
 
 	(void)_getch();
 	return 0;
